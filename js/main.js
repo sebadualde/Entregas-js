@@ -1,6 +1,5 @@
 // Recuperar turnos de LocalStorage o iniciar vacío
 let turnos = JSON.parse(localStorage.getItem("turnos")) || [];
-console.log("🔄 Cargando turnos desde LocalStorage:", turnos);
 
 // Referencias al DOM
 const formTurno = document.getElementById("formTurno");
@@ -8,11 +7,9 @@ const listaTurnos = document.getElementById("lista-turnos");
 const btnVaciar = document.getElementById("btnVaciar");
 const mensaje = document.getElementById("mensaje");
 
-// Renderizar turnos
+// Renderizar turnos en la UI
 function mostrarTurnos() {
   listaTurnos.innerHTML = "";
-
-  console.log("📋 Turnos actuales en memoria:", turnos);
 
   if (turnos.length === 0) {
     listaTurnos.innerHTML = `<li class="list-group-item text-muted">No hay turnos reservados.</li>`;
@@ -21,20 +18,42 @@ function mostrarTurnos() {
 
   turnos.forEach((turno, index) => {
     const li = document.createElement("li");
-    li.className = "list-group-item";
-    li.textContent = `${turno.nombre} - ${turno.dia} - ${turno.hora} - ${turno.servicio}`;
+    li.className = "list-group-item d-flex justify-content-between align-items-center";
+
+    // Texto del turno
+    const span = document.createElement("span");
+    span.textContent = `${turno.nombre} - ${turno.dia} - ${turno.hora} - ${turno.servicio}`;
+
+    // Botón eliminar
+    const btnEliminar = document.createElement("button");
+    btnEliminar.className = "btn btn-sm btn-outline-danger";
+    btnEliminar.textContent = "Eliminar";
+
+    btnEliminar.addEventListener("click", () => {
+      eliminarTurno(index);
+    });
+
+    li.appendChild(span);
+    li.appendChild(btnEliminar);
     listaTurnos.appendChild(li);
-    console.log(`➡️ Renderizando turno #${index + 1}:`, turno);
   });
 }
 
 // Guardar en LocalStorage
 function guardarTurnos() {
   localStorage.setItem("turnos", JSON.stringify(turnos));
-  console.log("💾 Turnos guardados en LocalStorage:", turnos);
 }
 
-// Reservar turno
+// Eliminar un turno específico
+function eliminarTurno(indice) {
+  turnos.splice(indice, 1);
+  guardarTurnos();
+  mostrarTurnos();
+  mensaje.textContent = "🗑️ Turno eliminado correctamente.";
+  mensaje.className = "error";
+}
+
+// Reservar turno (submit)
 formTurno.addEventListener("submit", (e) => {
   e.preventDefault();
 
@@ -43,28 +62,22 @@ formTurno.addEventListener("submit", (e) => {
   const hora = document.getElementById("hora").value;
   const servicio = document.getElementById("servicio").value;
 
-  console.log("📝 Datos ingresados:", { nombre, dia, hora, servicio });
-
+  // Validación en DOM (sin consola)
   if (!nombre || !dia || !hora || !servicio) {
     mensaje.textContent = "⚠️ Complete todos los campos.";
     mensaje.className = "error";
-    console.warn("⚠️ Intento de reserva con datos incompletos");
     return;
   }
 
   const existe = turnos.find((t) => t.dia === dia && t.hora === hora);
-
   if (existe) {
     mensaje.textContent = `❌ El turno del ${dia} a las ${hora} ya está ocupado.`;
     mensaje.className = "error";
-    console.warn("❌ Turno duplicado detectado:", existe);
     return;
   }
 
   const nuevoTurno = { nombre, dia, hora, servicio };
   turnos.push(nuevoTurno);
-  console.log("✅ Nuevo turno agregado:", nuevoTurno);
-
   guardarTurnos();
   mostrarTurnos();
 
@@ -76,7 +89,6 @@ formTurno.addEventListener("submit", (e) => {
 
 // Vaciar turnos
 btnVaciar.addEventListener("click", () => {
-  console.log("🗑️ Vaciando turnos. Estado previo:", turnos);
   turnos = [];
   guardarTurnos();
   mostrarTurnos();
