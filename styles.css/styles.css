@@ -1,0 +1,24 @@
+body {
+  background: linear-gradient(135deg, #f4f4f4, #e9ecef);
+}
+
+h1 {
+  font-weight: 700;
+  color: #333;
+}
+
+.card {
+  border-radius: 12px;
+}
+
+#mensaje {
+  font-size: 1.1rem;
+}
+
+#mensaje.success {
+  color: #198754; /* Verde bootstrap */
+}
+
+#mensaje.error {
+  color: #dc3545; /* Rojo bootstrap */
+}

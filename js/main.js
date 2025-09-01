@@ -1,102 +1,88 @@
-let turnos = [];
+// Recuperar turnos de LocalStorage o iniciar vacío
+let turnos = JSON.parse(localStorage.getItem("turnos")) || [];
+console.log("🔄 Cargando turnos desde LocalStorage:", turnos);
 
-function elegirServicio() {
-  let servicios = ["Corte de pelo", "Peinado", "Coloración"];
-  let mensaje = "Selecciona un servicio:\n";
-  servicios.forEach((servicio, index) => {
-    mensaje += `${index + 1}. ${servicio}\n`;
-  });
+// Referencias al DOM
+const formTurno = document.getElementById("formTurno");
+const listaTurnos = document.getElementById("lista-turnos");
+const btnVaciar = document.getElementById("btnVaciar");
+const mensaje = document.getElementById("mensaje");
 
-  let opcion = parseInt(prompt(mensaje));
+// Renderizar turnos
+function mostrarTurnos() {
+  listaTurnos.innerHTML = "";
 
-  if (opcion >= 1 && opcion <= servicios.length) {
-    let servicioSeleccionado = servicios[opcion - 1];
-    console.log(`Servicio seleccionado: ${servicioSeleccionado}`);
-    return servicioSeleccionado;
-  } else {
-    alert("Opción no válida. Intenta de nuevo.");
-    return elegirServicio();
-  }
-}
+  console.log("📋 Turnos actuales en memoria:", turnos);
 
-function reservarTurno() {
-  let nombre = prompt("Ingrese su nombre:");
-  let dia = prompt("Ingrese el día del turno (ejemplo: lunes):");
-  let hora = prompt("Ingrese la hora del turno (formato 00 a 23):");
-
-  if (isNaN(hora) || hora < 9 || hora > 18) {
-    alert("Hora no válida. Intente nuevamente.");
-    console.log("Entrada de hora inválida.");
+  if (turnos.length === 0) {
+    listaTurnos.innerHTML = `<li class="list-group-item text-muted">No hay turnos reservados.</li>`;
     return;
   }
 
-  let servicioElegido = elegirServicio();
-
-  verificarDisponibilidad(nombre, dia.toLowerCase(), `${hora}:9`, servicioElegido);
+  turnos.forEach((turno, index) => {
+    const li = document.createElement("li");
+    li.className = "list-group-item";
+    li.textContent = `${turno.nombre} - ${turno.dia} - ${turno.hora} - ${turno.servicio}`;
+    listaTurnos.appendChild(li);
+    console.log(`➡️ Renderizando turno #${index + 1}:`, turno);
+  });
 }
 
-function verificarDisponibilidad(nombre, dia, hora, servicio) {
-  let turnoExistente = turnos.find(
-    (turno) => turno.dia === dia && turno.hora === hora
-  );
+// Guardar en LocalStorage
+function guardarTurnos() {
+  localStorage.setItem("turnos", JSON.stringify(turnos));
+  console.log("💾 Turnos guardados en LocalStorage:", turnos);
+}
 
-  if (turnoExistente) {
-    alert(`El turno del ${dia} a las ${hora} ya está reservado. Intente otro.`);
-    console.log(`Turno ocupado: ${dia} a las ${hora}`);
-  } else {
-    let confirmar = confirm(`¿Deseás reservar el turno para ${nombre} el ${dia} a las ${hora} para ${servicio}?`);
-    if (confirmar) {
-      let nuevoTurno = {
-        nombre: nombre,
-        dia: dia,
-        hora: hora,
-        servicio: servicio
-      };
-      turnos.push(nuevoTurno);
-      alert(`✅ Turno confirmado para ${nombre} el ${dia} a las ${hora} para ${servicio}.`);
-      console.log("Turno reservado:", nuevoTurno);
-    } else {
-      alert("Reserva cancelada.");
-      console.log("Reserva cancelada por el usuario.");
-    }
+// Reservar turno
+formTurno.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const nombre = document.getElementById("nombre").value.trim();
+  const dia = document.getElementById("dia").value;
+  const hora = document.getElementById("hora").value;
+  const servicio = document.getElementById("servicio").value;
+
+  console.log("📝 Datos ingresados:", { nombre, dia, hora, servicio });
+
+  if (!nombre || !dia || !hora || !servicio) {
+    mensaje.textContent = "⚠️ Complete todos los campos.";
+    mensaje.className = "error";
+    console.warn("⚠️ Intento de reserva con datos incompletos");
+    return;
   }
-}
 
-function mostrarTurnos() {
-  if (turnos.length === 0) {
-    alert("No hay turnos reservados.");
-    console.log("No hay turnos para mostrar.");
-  } else {
-    let mensaje = "Turnos reservados:\n";
-    console.log("Listado de turnos reservados:");
-    turnos.forEach((turno, index) => {
-      let linea = `${index + 1}. ${turno.nombre} - ${turno.dia} - ${turno.hora} - ${turno.servicio}`;
-      mensaje += `${linea}\n`;
-      console.log(linea);
-    });
-    alert(mensaje);
-  }
-}
+  const existe = turnos.find((t) => t.dia === dia && t.hora === hora);
 
-// Menú principal
-let salir = false;
-while (!salir) {
-  let opcion = prompt("Bienvenido al sistema de turnos.\n1. Reservar turno\n2. Ver turnos reservados\n3. Salir");
-  switch (opcion) {
-    case "1":
-      console.log("=== Reservar nuevo turno ===");
-      reservarTurno();
-      break;
-    case "2":
-      console.log("=== Mostrar turnos reservados ===");
-      mostrarTurnos();
-      break;
-    case "3":
-      console.log("=== Salir del sistema ===");
-      salir = true;
-      break;
-    default:
-      alert("Opción no válida.");
-      console.log("Opción inválida seleccionada.");
+  if (existe) {
+    mensaje.textContent = `❌ El turno del ${dia} a las ${hora} ya está ocupado.`;
+    mensaje.className = "error";
+    console.warn("❌ Turno duplicado detectado:", existe);
+    return;
   }
-}
+
+  const nuevoTurno = { nombre, dia, hora, servicio };
+  turnos.push(nuevoTurno);
+  console.log("✅ Nuevo turno agregado:", nuevoTurno);
+
+  guardarTurnos();
+  mostrarTurnos();
+
+  mensaje.textContent = `✅ Turno confirmado para ${nombre} el ${dia} a las ${hora} (${servicio}).`;
+  mensaje.className = "success";
+
+  formTurno.reset();
+});
+
+// Vaciar turnos
+btnVaciar.addEventListener("click", () => {
+  console.log("🗑️ Vaciando turnos. Estado previo:", turnos);
+  turnos = [];
+  guardarTurnos();
+  mostrarTurnos();
+  mensaje.textContent = "🗑️ Todos los turnos fueron eliminados.";
+  mensaje.className = "error";
+});
+
+// Render inicial
+mostrarTurnos();
