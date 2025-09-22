@@ -1,3 +1,17 @@
+fetch('data/servicios.json')
+  .then(r => r.json())
+  .then(servicios => {
+    const select = document.getElementById("servicio");
+    servicios.forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s.nombre;
+      opt.textContent = `${s.nombre} - $${s.precio}`;
+      select.appendChild(opt);
+    });
+  })
+  .catch(err => console.error("Error cargando servicios:", err));
+
+
 // Recuperar turnos de LocalStorage o iniciar vacío
 let turnos = JSON.parse(localStorage.getItem("turnos")) || [];
 

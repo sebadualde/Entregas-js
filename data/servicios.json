@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "nombre": "Corte de pelo",
+    "descripcion": "Corte clásico con terminación profesional",
+    "precio": 1500
+  },
+  {
+    "id": 2,
+    "nombre": "Peinado",
+    "descripcion": "Peinado a elección con productos de primera calidad",
+    "precio": 1000
+  },
+  {
+    "id": 3,
+    "nombre": "Coloración",
+    "descripcion": "Coloración completa o retoque de raíces",
+    "precio": 2500
+  },
+  {
+    "id": 4,
+    "nombre": "Afeitado clásico",
+    "descripcion": "Afeitado con toallas calientes y navaja profesional",
+    "precio": 1200
+  }
+]
